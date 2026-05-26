@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مركز قيادة علم النبات</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <style>
+        /* ================= التنسيقات (CSS) ================= */
+        :root {
+            --bg-color: #050b18;
+            --card-bg: #0a1329;
+            --primary: #00e5ff;
+            --success: #00ff66;
+            --danger: #ff3333;
+            --text-light: #e0e0e0;
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-light);
+            margin: 0;
+            padding: 0;
+            transition: all 0.3s ease;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            background: rgba(10, 19, 41, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 229, 255, 0.2);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            color: var(--primary);
+            text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+        }
+
+        /* زر التبديل بين المراجعة والاختبار */
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .mode-label { font-weight: bold; font-size: 1.1rem; }
+        .switch { position: relative; display: inline-block; width: 60px; height: 34px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #2a3b5c; transition: .4s; border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 26px; width: 26px;
+            left: 4px; bottom: 4px; background-color: white;
+            transition: .4s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--primary); box-shadow: 0 0 15px var(--primary); }
+        input:checked + .slider:before { transform: translateX(26px); }
+
+        /* شبكة الكروت والتوزيع الهندسي */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+            padding: 40px;
+            align-items: stretch;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+            box-sizing: border-box;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 12px 40px rgba(0, 229, 255, 0.2); }
+        .card h3 { text-align: center; color: white; margin: 15px 0; border-bottom: 1px solid #333; padding-bottom: 10px;}
+
+        /* حاوية الصور والتأثير الضبابي الذكي */
+        .image-wrapper {
+            height: 350px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #000;
+            overflow: hidden;
+            position: relative;
+            border-radius: 8px;
+        }
+        .image-wrapper img {
+            max-width: 100%; max-height: 100%; width: auto; height: auto;
+            object-fit: contain; position: relative; z-index: 2;
+            transition: transform 0.3s ease;
+        }
+        .bg-blur {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-size: cover; background-position: center;
+            filter: blur(18px) brightness(0.35); z-index: 1; transform: scale(1.1);
+        }
+
+        /* ليزر الفحص */
+        .laser-scanner {
+            position: absolute; top: -100%; left: 0; width: 100%; height: 3px;
+            background: var(--primary); box-shadow: 0 0 20px 5px var(--primary);
+            z-index: 3; opacity: 0; transition: opacity 0.3s;
+        }
+        .is-scanning .laser-scanner { opacity: 1; animation: scan 1.5s ease-in-out forwards; }
+        @keyframes scan {
+            0% { top: 0; } 50% { top: 100%; } 100% { top: 0; opacity: 0; }
+        }
+
+        /* النصوص والأزرار */
+        .classification-text {
+            margin-top: auto; min-height: 60px; display: flex; align-items: center;
+            background: rgba(0, 229, 255, 0.05); padding: 10px; border-radius: 8px;
+            border-right: 3px solid var(--primary); line-height: 1.6;
+        }
+        .btn-scan {
+            background: transparent; color: var(--primary); border: 1px solid var(--primary);
+            padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold;
+            font-family: 'Tajawal', sans-serif; transition: all 0.3s; width: 100%; font-size: 1.1rem;
+        }
+        .btn-scan:hover { background: var(--primary); color: #000; box-shadow: 0 0 15px var(--primary); }
+        .hidden-answer { display: none; margin-top: 15px; }
+        .feedback-btns { display: flex; gap: 10px; margin-top: 15px; }
+        .feedback-btns button {
+            flex: 1; padding: 10px; border: none; border-radius: 6px; cursor: pointer;
+            font-weight: bold; font-family: 'Tajawal', sans-serif; color: #000; transition: transform 0.2s;
+        }
+        .feedback-btns button:active { transform: scale(0.95); }
+        .btn-got-it { background-color: var(--success); box-shadow: 0 0 10px rgba(0, 255, 102, 0.4); }
+        .btn-needs-practice { background-color: var(--danger); box-shadow: 0 0 10px rgba(255, 51, 51, 0.4); color: white !important;}
+
+        /* إخفاء التصنيف في وضع الاختبار */
+        .quiz-mode .classification-text:not(.hidden-answer .classification-text) { display: none; }
+    </style>
+</head>
+<body class="review-mode">
+
+    <header>
+        <div class="logo">
+            <h1>مركز قيادة علم النبات</h1>
+        </div>
+        <div class="toggle-container">
+            <span class="mode-label" id="label-review" style="color: var(--primary);">مراجعة</span>
+            <label class="switch">
+                <input type="checkbox" id="modeToggle">
+                <span class="slider round"></span>
+            </label>
+            <span class="mode-label" id="label-quiz">اختبار</span>
+        </div>
+    </header>
+
+    <main id="grid-container" class="grid"></main>
+
+    <script>
+        /* ================= البرمجة والبيانات (JS) ================= */
+        // 1. قاموس العينات (محدث بصيغة webp لسرعة الصاروخ)
+        const botanicalDictionary = [
+            { id: 1, classification: "ورقة بسيطة متبادلة، نبات عشبي، ساق قائم", img: "img/1.webp" },
+            { id: 2, classification: "أوراق بسيطة متقابلة، نبات عشبي", img: "img/2.webp" },
+            { id: 3, classification: "أوراق متحورة إلى أشواك، أذينات ورقية، نبات عشبي", img: "img/3.webp" },
+            { id: 4, classification: "ورقة مخزنة للماء والعصارة النباتية، قمة إبرية الشكل", img: "img/4.webp" },
+            { id: 5, classification: "أوراق بسيطة بيضية الشكل، ورقة معنقة في وضع متبادل", img: "img/5.webp" },
+            { id: 6, classification: "ورقة بسيطة رمحية الشكل، متبادلة، نبات خشبي", img: "img/6.webp" },
+            { id: 7, classification: "أوراق بسيطة رمحية الشكل، دوارة سوارية (٣ في عقدة)، التعرق متوازي غير شبكي", img: "img/7.webp" },
+            { id: 8, classification: "أوراق بسيطة بيضية الشكل، متقابلة، نبات عشبي", img: "img/8.webp" },
+            { id: 9, classification: "ورقة بيضية الشكل ريشية، نبات عشبي، أوراق متقابلة", img: "img/9.webp" },
+            { id: 10, classification: "ورقة مركبة ريشية متضاعفة، عينة مركبة", img: "img/10.webp" },
+            { id: 11, classification: "جذر عرضي درني (تخزيني)، نبات البطاطا", img: "img/11.webp" },
+            { id: 12, classification: "ساق قرصية تحت أرضية، قواعد الأوراق مختزنة بالمواد الغذائية، جذور عرضية ليفية", img: "img/12.webp" },
+            { id: 13, classification: "ساق عصيرية مكتنزة، أوراق شوكية متحورة", img: "img/13.webp" },
+            { id: 14, classification: "جذور ليفية (خيطية)، أوراق فلقية، الإنبات هوائي", img: "img/14.webp" },
+            { id: 15, classification: "جذر وتدي درني، مخروطي الشكل", img: "img/15.webp" },
+            { id: 16, classification: "جذر وتدي درني، مغزلي الشكل", img: "img/16.webp" },
+            { id: 17, classification: "الإنبات الأرضي في نبات الفول، بذرة لا اندوسبرمية، ذات فلقتين", img: "img/17.webp" },
+            { id: 18, classification: "جذر وتدي عادي، عينة جذرية", img: "img/18.webp" },
+            { id: 19, classification: "مراحل الإنبات في نبات الفاصوليا، إنبات هوائي", img: "img/19.webp" }
+        ];
+
+        let isQuizMode = false;
+        const gridContainer = document.getElementById('grid-container');
+        const modeToggle = document.getElementById('modeToggle');
+        const labelReview = document.getElementById('label-review');
+        const labelQuiz = document.getElementById('label-quiz');
+
+        // 2. إعدادات نافذة التكبير الذكية
+        const zoomOverlay = document.createElement('div');
+        zoomOverlay.style.cssText = 'position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(5,11,24,0.95); z-index:10000; display:none; justify-content:center; align-items:center; cursor:zoom-out;';
+        const zoomImg = document.createElement('img');
+        zoomImg.style.cssText = 'max-width:90%; max-height:90%; object-fit:contain; border-radius:8px; box-shadow:0 0 30px rgba(0,229,255,0.5); transition:transform 0.3s ease;';
+        zoomOverlay.appendChild(zoomImg);
+        document.body.appendChild(zoomOverlay);
+        zoomOverlay.addEventListener('click', () => zoomOverlay.style.display = 'none');
+
+        window.openZoom = (src) => { zoomImg.src = src; zoomOverlay.style.display = 'flex'; };
+
+        // 3. معالج أخطاء الصور الذكي (يحول بين الصيغ إذا لزم الأمر ويحدث الخلفية)
+        window.handleImageError = (imgElement) => {
+            const currentSrc = imgElement.src;
+            let newSrc = '';
+            if (currentSrc.includes('.webp')) newSrc = currentSrc.replace('.webp', '.png');
+            else if (currentSrc.includes('.png')) newSrc = currentSrc.replace('.png', '.jpg');
+            else newSrc = 'https://via.placeholder.com/400x500/050b18/00e5ff?text=عينة+مفقودة';
+            
+            imgElement.src = newSrc;
+            const cardWrapper = imgElement.parentElement;
+            if (cardWrapper) {
+                const blurLayer = cardWrapper.querySelector('.bg-blur');
+                if (blurLayer) blurLayer.style.backgroundImage = `url('${newSrc}')`;
+            }
+            imgElement.onerror = null; 
+        };
+
+        // 4. دالة بناء المصفوفة والكروت
+        function renderGrid() {
+            if (!gridContainer) return;
+            gridContainer.innerHTML = '';
+            const sortedData = [...botanicalDictionary].sort((a, b) => a.id - b.id);
+            
+            sortedData.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.id = `card-${item.id}`;
+                
+                let content = `
+                    <div class="image-wrapper" id="wrapper-${item.id}">
+                        <div class="bg-blur" style="background-image: url('${item.img}');"></div>
+                        <div class="laser-scanner"></div>
+                        <img src="${item.img}" alt="عينة ${item.id}" loading="lazy"
+                             onerror="handleImageError(this)" onclick="openZoom(this.src)" style="cursor: zoom-in;">
+                        <div style="position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); color: #fff; padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; pointer-events: none; z-index: 3;">اضغط للتقريب 🔍</div>
+                    </div>
+                    <h3>عينة رقم ${item.id}</h3>`;
+                
+                if (isQuizMode) {
+                    content += `
+                        <button class="btn-scan" id="btn-${item.id}" onclick="startScan(${item.id})">بدء الفحص 🔍</button>
+                        <div id="ans-${item.id}" class="hidden-answer">
+                            <div class="classification-text"><strong>التصنيف:</strong><br>${item.classification}</div>
+                            <div class="feedback-btns">
+                                <button class="btn-got-it" onclick="done(${item.id}, true)">عرفتها ✅</button>
+                                <button class="btn-needs-practice" onclick="done(${item.id}, false)">مراجعة ❌</button>
+                            </div>
+                        </div>`;
+                } else {
+                    content += `
+                        <div class="classification-text"><strong>التصنيف:</strong><br>${item.classification}</div>`;
+                }
+                
+                card.innerHTML = content;
+                gridContainer.appendChild(card);
+            });
+        }
+
+        // 5. التفاعل والأزرار
+        window.startScan = (id) => {
+            const wrapper = document.getElementById(`wrapper-${id}`);
+            const btn = document.getElementById(`btn-${id}`);
+            const ans = document.getElementById(`ans-${id}`);
+            
+            wrapper.classList.add('is-scanning');
+            btn.textContent = "جاري تحليل العينة...";
+            
+            setTimeout(() => {
+                wrapper.classList.remove('is-scanning');
+                btn.style.display = 'none';
+                ans.style.display = 'block';
+            }, 1500); 
+        };
+
+        modeToggle.addEventListener('change', (e) => {
+            isQuizMode = e.target.checked;
+            document.body.className = isQuizMode ? 'quiz-mode' : 'review-mode';
+            labelReview.style.color = isQuizMode ? 'var(--text-light)' : 'var(--primary)';
+            labelQuiz.style.color = isQuizMode ? 'var(--primary)' : 'var(--text-light)';
+            renderGrid();
+        });
+
+        window.done = (id, success) => {
+            const card = document.getElementById(`card-${id}`);
+            card.style.borderColor = success ? 'var(--success)' : 'var(--danger)';
+            card.style.boxShadow = success ? '0 0 20px rgba(0, 255, 102, 0.4)' : '0 0 20px rgba(255, 51, 51, 0.4)';
+            if (success && typeof confetti === 'function') {
+                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#00e5ff', '#00ff66', '#ffffff'] });
+            }
+        };
+
+        // تشغيل البناء عند فتح الصفحة
+        document.addEventListener('DOMContentLoaded', renderGrid);
+    </script>
+</body>
+</html>
