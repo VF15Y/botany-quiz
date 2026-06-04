@@ -173,27 +173,19 @@
 
     <script>
         /* ================= البرمجة والبيانات (JS) ================= */
-        // 1. قاموس العينات (محدث بصيغة webp لسرعة الصاروخ)
+        // قاموس العينات (محدث ومختصر لـ 11 عينة مع تبديل العينة 10 و 11)
         const botanicalDictionary = [
-            { id: 1, classification: "ورقة بسيطة متبادلة، نبات عشبي، ساق قائم", img: "img/1.webp" },
-            { id: 2, classification: "أوراق بسيطة متقابلة، نبات عشبي", img: "img/2.webp" },
-            { id: 3, classification: "أوراق متحورة إلى أشواك، أذينات ورقية، نبات عشبي", img: "img/3.webp" },
-            { id: 4, classification: "ورقة مخزنة للماء والعصارة النباتية، قمة إبرية الشكل", img: "img/4.webp" },
-            { id: 5, classification: "أوراق بسيطة بيضية الشكل، ورقة معنقة في وضع متبادل", img: "img/5.webp" },
-            { id: 6, classification: "ورقة بسيطة رمحية الشكل، متبادلة، نبات خشبي", img: "img/6.webp" },
-            { id: 7, classification: "أوراق بسيطة رمحية الشكل، دوارة سوارية (٣ في عقدة)، التعرق متوازي غير شبكي", img: "img/7.webp" },
-            { id: 8, classification: "أوراق بسيطة بيضية الشكل، متقابلة، نبات عشبي", img: "img/8.webp" },
-            { id: 9, classification: "ورقة بيضية الشكل ريشية، نبات عشبي، أوراق متقابلة", img: "img/9.webp" },
-            { id: 10, classification: "ورقة مركبة ريشية متضاعفة، عينة مركبة", img: "img/10.webp" },
-            { id: 11, classification: "جذر عرضي درني (تخزيني)، نبات البطاطا", img: "img/11.webp" },
-            { id: 12, classification: "ساق قرصية تحت أرضية، قواعد الأوراق مختزنة بالمواد الغذائية، جذور عرضية ليفية", img: "img/12.webp" },
-            { id: 13, classification: "ساق عصيرية مكتنزة، أوراق شوكية متحورة", img: "img/13.webp" },
-            { id: 14, classification: "جذور ليفية (خيطية)، أوراق فلقية، الإنبات هوائي", img: "img/14.webp" },
-            { id: 15, classification: "جذر وتدي درني، مخروطي الشكل", img: "img/15.webp" },
-            { id: 16, classification: "جذر وتدي درني، مغزلي الشكل", img: "img/16.webp" },
-            { id: 17, classification: "الإنبات الأرضي في نبات الفول، بذرة لا اندوسبرمية، ذات فلقتين", img: "img/17.webp" },
-            { id: 18, classification: "جذر وتدي عادي، عينة جذرية", img: "img/18.webp" },
-            { id: 19, classification: "مراحل الإنبات في نبات الفاصوليا، إنبات هوائي", img: "img/19.webp" }
+            { id: 1, classification: "جذر عرضي درني (تخزيني)، نبات البطاطا", img: "img/1.webp" },
+            { id: 2, classification: "ساق قرصية تحت أرضية، قواعد الأوراق مختزنة بالمواد الغذائية، جذور عرضية ليفية", img: "img/2.webp" },
+            { id: 3, classification: "ساق عصيرية مكتنزة، أوراق شوكية متحورة", img: "img/3.webp" },
+            { id: 4, classification: "جذور ليفية (خيطية)، أوراق فلقية، الإنبات هوائي", img: "img/4.webp" },
+            { id: 5, classification: "جذر وتدي درني، مخروطي الشكل", img: "img/5.webp" },
+            { id: 6, classification: "جذر وتدي درني، مغزلي الشكل", img: "img/6.webp" },
+            { id: 7, classification: "جذر وتدي عادي، عينة جذرية", img: "img/7.webp" },
+            { id: 8, classification: "مراحل الإنبات في نبات الفاصوليا، إنبات هوائي", img: "img/8.webp" },
+            { id: 9, classification: "الإنبات الأرضي في نبات الفول، بذرة لا إندوسبرمية، ذات فلقتين", img: "img/9.webp" },
+            { id: 10, classification: "الإنبات الهوائي في نبات الفاصوليا، بذرة لا إندوسبرمية، ذات فلقتين", img: "img/10.webp" },
+            { id: 11, classification: "الإنبات الهوائي في نبات الحلبة، بذرة إندوسبرمية، ذات فلقتين", img: "img/11.webp" }
         ];
 
         let isQuizMode = false;
@@ -202,7 +194,7 @@
         const labelReview = document.getElementById('label-review');
         const labelQuiz = document.getElementById('label-quiz');
 
-        // 2. إعدادات نافذة التكبير الذكية
+        // إعدادات نافذة التكبير الذكية
         const zoomOverlay = document.createElement('div');
         zoomOverlay.style.cssText = 'position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(5,11,24,0.95); z-index:10000; display:none; justify-content:center; align-items:center; cursor:zoom-out;';
         const zoomImg = document.createElement('img');
@@ -213,7 +205,7 @@
 
         window.openZoom = (src) => { zoomImg.src = src; zoomOverlay.style.display = 'flex'; };
 
-        // 3. معالج أخطاء الصور الذكي (يحول بين الصيغ إذا لزم الأمر ويحدث الخلفية)
+        // معالج أخطاء الصور الذكي
         window.handleImageError = (imgElement) => {
             const currentSrc = imgElement.src;
             let newSrc = '';
@@ -230,7 +222,7 @@
             imgElement.onerror = null; 
         };
 
-        // 4. دالة بناء المصفوفة والكروت
+        // دالة بناء المصفوفة والكروت
         function renderGrid() {
             if (!gridContainer) return;
             gridContainer.innerHTML = '';
@@ -271,7 +263,7 @@
             });
         }
 
-        // 5. التفاعل والأزرار
+        // التفاعل والأزرار
         window.startScan = (id) => {
             const wrapper = document.getElementById(`wrapper-${id}`);
             const btn = document.getElementById(`btn-${id}`);
